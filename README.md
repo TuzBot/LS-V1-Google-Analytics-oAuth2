@@ -13,9 +13,9 @@ Brings Lemonstand V1 Google Analytics signing method up to date with oAuth2
 10. Enter your Google Developer Console credentials *NOTE* Making sure your Redirect URI is identical to the one used in Google Developer Console and Save.
 
 #On Saving
-1 of 2 options will occur when accepting and authoring the web app.
+1 of 2 options will occur when accepting and authorising the web app.
 
-1. You will either be redirected to Google Authorisation page to Accept and authorise the web app.
-2. An alert will flash up on the stats page with a message along the lines "TEMPORARY MOVED" with an option to click a link which says 'here'.
+1. You will either be redirected to Google Authorisation page to accept and authorise the web app.
+2. An alert will flash up on the stats page with a message along the lines of "TEMPORARY MOVED" with an option to click a link which says 'here'.
 
-If option 2 is the option click the 'here' link which will then take you through to option 1 to proceed to accept and authorise.
+If option 2 is the option click the 'here' link which will then take you through to option 1 where you can proceed to accept and authorise.
