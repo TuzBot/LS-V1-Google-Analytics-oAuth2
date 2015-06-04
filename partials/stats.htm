@@ -1,0 +1,62 @@
+<? Phpr_View::beginBlock("head") ?>
+	<link rel="stylesheet" href="modules/cms/resources/css/cms.css?<?= module_build('cms') ?>" type="text/css"/>
+<? Phpr_View::endBlock() ?>
+
+<? Phpr_View::beginBlock("view") ?>
+	<ul class="breadcrumbs">
+		<li><a href="<?= url('/system/settings') ?>">Settings</a></li>
+		<li><?= $this->app_page_title ?></li>
+	</ul>
+
+	<div class="form500">
+		<?= Phpr_Form::openTag(array('id'=>'settings_form')) ?>
+			<? $this->formRender($settings) ?>
+
+			<?= backend_ajax_button('Save', 'stats_onSave', array(), "update: 'multi', loadIndicator: {hideOnSuccess: true}, preCheckFunction: function(){
+				if (Number($('prev_pageviews').value) > Number($('Cms_Stats_Settings_keep_pageviews').get('value')))
+					return confirm('New pageviews number is less than the previous value. Obsolete pageviews data will be deleted. Continue?');
+				return true;
+			}") ?>
+			<?= backend_button('Cancel', url('system/settings')) ?>
+			
+			<input type="hidden" id="prev_pageviews" value="<?= $settings->keep_pageviews ?>"/>
+
+			<div class="clear"></div>
+		</form>
+		
+		<script type="text/javascript">
+			window.addEvent('domready', function(){
+				$('Cms_Stats_Settings_ga_enabled').addEvent('toggle', function(state){
+					if (state)
+						$('form_field_ga_enabledCms_Stats_Settings').addClass('separatedField');
+					else
+						$('form_field_ga_enabledCms_Stats_Settings').removeClass('separatedField');
+					
+					var fields = ['form_field_ga_siteidCms_Stats_Settings', 'form_field_ga_usernameCms_Stats_Settings', 'form_field_ga_property_idCms_Stats_Settings', 'ga_hint', 'form_field_ga_site_speed_sample_rateCms_Stats_Settings', 'form_field_ga_domain_nameCms_Stats_Settings', 'form_field_ga_enable_doubleclick_remarketingCms_Stats_Settings', 'form_field_ga_client_idCms_Stats_Settings', 'form_field_ga_client_secretCms_Stats_Settings', 'form_field_ga_redirect_urlCms_Stats_Settings'];
+					fields.each(function(element){
+						console.log(element);
+						if (state) 
+							$(element).show(); 
+						else
+							$(element).hide();
+					})
+				})
+				
+				$('Cms_Stats_Settings_enable_builtin_statistics').addEvent('toggle', function(state){
+					if (state)
+						$('form_field_enable_builtin_statisticsCms_Stats_Settings').addClass('separatedField');
+					else
+						$('form_field_enable_builtin_statisticsCms_Stats_Settings').removeClass('separatedField');
+						
+					var fields = ['form_field_keep_pageviewsCms_Stats_Settings', 'ip_filters'];
+					fields.each(function(element){
+						if (state) 
+							$(element).show(); 
+						else
+							$(element).hide();
+					});
+				});
+			});
+		</script>
+	</div>
+<? Phpr_View::endBlock() ?>
