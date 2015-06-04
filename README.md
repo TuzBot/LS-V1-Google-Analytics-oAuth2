@@ -1,4 +1,4 @@
-# LS-V1-Google-Analytics-oAuth2
+# Lemonstand V1 Google Analytics oAuth2
 Brings Lemonstand V1 Google Analytics signing method up to date with oAuth2
 
 1. Login to your Google Developers Console.
@@ -12,7 +12,7 @@ Brings Lemonstand V1 Google Analytics signing method up to date with oAuth2
 9. Navigate to System > Settings > Statistics and Dashboard
 10. Enter your Google Developer Console credentials *NOTE* Making sure your Redirect URI is identical to the one used in Google Developer Console and Save.
 
-#On Saving
+# On Save
 1 of 2 options will occur when accepting and authorising the web app.
 
 1. You will either be redirected to Google Authorisation page to accept and authorise the web app.
