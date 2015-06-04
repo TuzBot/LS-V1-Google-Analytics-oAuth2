@@ -1,7 +1,7 @@
 # Lemonstand V1 Google Analytics oAuth2
 Brings Lemonstand V1 Google Analytics signing method up to date with oAuth2
 
-1. Login to your Google Developers Console.
+1. Login to your Google Developers Console. (https://console.developers.google.com)
 2. Create a project (if you haven't already got an active project)
 3. Navigate to Apis under Apis & Auth and add the Analytics API to your project.
 4. Navigate and create Credentials from the sidebar under Apis & Auth choose Web Application as your option, leave the Redirect URIs callback as it is (oauth2callback) prepend your domain (if not automatically pre-pended).
