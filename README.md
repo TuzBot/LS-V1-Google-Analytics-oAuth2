@@ -16,6 +16,6 @@ Brings Lemonstand V1 Google Analytics signing method up to date with oAuth2
 1 of 2 options will occur when accepting and authorising the web app.
 
 1. You will either be redirected to Google Authorisation page to accept and authorise the web app.
-2. An alert will flash up on the stats page with a message along the lines of "TEMPORARY MOVED" with an option to click a link which says 'here'.
+2. An alert will flash up on the stats page with a message along the lines of "MOVED TEMPORARILY" with an option to click a link which says 'here'.
 
 If option 2 is the option click the 'here' link which will then take you through to option 1 where you can proceed to accept and authorise.
