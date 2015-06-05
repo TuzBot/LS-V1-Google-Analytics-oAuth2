@@ -27,7 +27,7 @@
 			$this->define_column('ga_siteid', 'Profile ID')->validation()->fn('trim');
 			$this->define_column('ga_property_id', 'Web Property ID')->validation()->fn('trim');
 			
-			$this->define_column('ga_username', 'Email')->validation()->fn('trim')->Email(true);
+			$this->define_column('ga_username', 'Email Address')->validation()->fn('trim')->Email(true);
 			$this->define_column('ga_password', 'Password')->validation()->fn('trim');
 			$this->define_column('ga_client_id', 'Client ID')->validation()->fn('trim');
 			$this->define_column('ga_client_secret', 'Client Secret')->validation()->fn('trim');
@@ -55,10 +55,11 @@
 			$this->add_form_field('ga_siteid', 'left')->tab('Google Analytics')->cssClassName($extraFieldClass);
 			$this->add_form_field('ga_property_id', 'right')->tab('Google Analytics')->cssClassName($extraFieldClass);
 
-			$this->add_form_field('ga_username', 'full')->tab('Google Analytics')->comment('Email generated in your Google developers console', 'above')->cssClassName($extraFieldClass);
+			$this->add_form_field('ga_client_id', 'full')->tab('Google Analytics')->comment('Client ID generated in your Google developers console for use with Google Analytics', 'above')->cssClassName($extraFieldClass);
+			$this->add_form_field('ga_username', 'full')->tab('Google Analytics')->comment('Email generated in your Google developers console not your Google login email', 'above')->cssClassName($extraFieldClass);
 			//$this->add_form_field('ga_password', 'right')->tab('Google Analytics')->renderAs(frm_password)->comment('Password you use to log into Google Analytics', 'above')->cssClassName($extraFieldClass);
-			$this->add_form_field('ga_client_id', 'left')->tab('Google Analytics')->comment('Client ID generated in your Google developers console for use with Google Analytics', 'above')->cssClassName($extraFieldClass);
-			$this->add_form_field('ga_client_secret', 'right')->tab('Google Analytics')->comment('Client Secret generated in your Google developers console for Google Analytics', 'above')->cssClassName($extraFieldClass);
+		
+			$this->add_form_field('ga_client_secret', 'full')->tab('Google Analytics')->comment('Client Secret generated in your Google developers console for Google Analytics', 'above')->cssClassName($extraFieldClass);
 			$this->add_form_field('ga_redirect_url', 'full')->tab('Google Analytics')->comment('Redirect URL generated to in your Google developers console for Google Analytics', 'above')->cssClassName($extraFieldClass);
 			$this->add_form_field('ga_domain_name')->tab('Google Analytics')->cssClassName($extraFieldClass)->comment('Specify the store domain name to use <a href="http://code.google.com/apis/analytics/docs/tracking/gaTrackingSite.html" target="_blank">Google Analytics cross-domain tracking feature</a>. Leave the field blank to disable the cross-domain tracking for this website.', 'above', true);
 			
