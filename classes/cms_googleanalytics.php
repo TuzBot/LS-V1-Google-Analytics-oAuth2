@@ -54,7 +54,6 @@
 			$this->refresh_token = null;
 			$this->read_log($this->debug);
 			$this->log = array();
-			$this->scope = null;
 		}
 		
 		public function login()
@@ -115,7 +114,6 @@
 			
 			return false;
 		}
-		
 		
 		public function authenticate()
 		{
@@ -197,7 +195,7 @@
 			if(!$this->code)
 				throw new Phpr_ApplicationException('Error requesting Google Analytics token. Invalid response from Google Analytics API.');
 						
-			$this->log('Requesting Token - Pending');
+			$this->log('Requesting Token - Pending...');
 				
 			$data = array(
 				'code'=>$this->code,

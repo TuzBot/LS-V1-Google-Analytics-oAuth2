@@ -90,7 +90,9 @@
 		
 		public function grant_oauth2_request_response($params)
 		{
+			$admin_url = Phpr::$config->get('BACKEND_URL', 'backend');
+			
 			Phpr::$session->flash['success'] = 'Statistics settings have been saved.';
-			Phpr::$response->redirect(root_url('admin/system/settings'));	
+			Phpr::$response->redirect(root_url($admin_url.'/system/settings'));	
 		}
 	}

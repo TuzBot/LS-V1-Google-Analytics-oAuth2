@@ -172,19 +172,6 @@
 			
 			if (!strlen($this->ga_client_secret))
 				$this->validation->setError('Please specify Client Secret value', 'ga_client_secret', true);
-				
-			/*
-			if (!strlen($this->ga_username))
-				$this->validation->setError('Please specify Google Analytics account Email address', 'ga_username', true);
-				
-			if (!strlen($this->ga_password) && !strlen($this->fetched['ga_password']))
-				$this->validation->setError('Please specify Google Analytics password', 'ga_password', true);
-
-			if (strlen($this->ga_password))
-				$this->ga_password = base64_encode($this->ga_password);
-			else
-				$this->ga_password = $this->fetched['ga_password'];
-			*/
 			
 			if (strlen($this->ga_client_secret))
 				$this->ga_client_secret = $this->ga_client_secret;
