@@ -19,6 +19,7 @@
 		public $captcha_value;
 		public $captcha_token;
 		public $auth_token = null;
+		public $debug = false;
 
 		protected $auth_url = 'https://accounts.google.com/o/oauth2/auth';
 		protected $token_url = 'https://www.googleapis.com/oauth2/v3/token';
@@ -28,7 +29,6 @@
 		
 		protected $refresh_token;
 		protected $isLoggedIn = false;
-		protected $debug = true;
 		protected $time_to_expire = 59;
 		protected $log = array();
 		
@@ -74,16 +74,26 @@
 			
 			if(!$this->refresh_token)
 				$data['approval_prompt'] = 'force';
-				
+			
+			$query_string = $this->url_encode_array($data);
+			
+			$this->log('Connecting to: '.$this->auth_url.$query_string);
+			
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $this->auth_url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->url_encode_array($data));
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $query_string);
 			$output = curl_exec($ch);
 			$info = curl_getinfo($ch);
 			curl_close($ch);
+			
+			$this->log($info);
+			
+			$query_string = null;
+			$ch = null;
+			unset($data);
 			
 			if($info['http_code'] == 302)
 			{
@@ -97,6 +107,9 @@
 
 			if (!$this->auth_token)
 				throw new Phpr_SystemException('Error connecting to Google Analytics. Authentication ticket not found in Google API response.');
+			
+			$output = null;
+			unset($info);
 			
 			$this->isLoggedIn = true;	
 		}
@@ -165,6 +178,8 @@
 						
 			$url = $this->feed_url.'?'.$this->url_encode_array($get_fields);
 			$headers = array('Authorization: Bearer '.$this->auth_token);
+			
+			$this->log('Connecting to: '.$url);
 								
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $url);
@@ -175,7 +190,11 @@
 			$response = curl_exec($ch);
 			$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			
+			$this->log($code);
+			
 			curl_close($ch);
+			
+			$ch = null;
 			
 			if ($code != 200)
 				throw new Phpr_ApplicationException('Error downloading Google Analytics report. Invalid response from Google Analytics API. Response code: '.$code);
@@ -183,7 +202,6 @@
 			if (!preg_match(',\</feed\>\s*$,', $response))
 				throw new Phpr_ApplicationException('Error downloading Google Analytics report. Response text is not an XML document.');
 			
-			$ch = null;
 			$code = null;
 			unset($get_fields);
 				
@@ -204,21 +222,33 @@
 				'redirect_uri'=>trim($this->redirect_url),
 				'grant_type'=>'authorization_code'
 			);
+			
+			$query_string = $this->url_encode_array($data);
+			
+			$this->log('Connecting to: '.$this->token_url.$query_string);
 					
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL,$this->token_url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->url_encode_array($data));
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $query_string);
 			$response = curl_exec($ch);
 			$info = curl_getinfo($ch);
 			curl_close($ch);
 			
+			$this->log($info);
+						
 			$result = json_decode($response);
+			
+			$response = null;
+			$query_string = null;
+			$ch = null;
 						
 			if(isset($result->error))
 			{
+				$this->log($result);
+				
 				$description = isset($result->error_description) ? ' - '.$result->error_description : '';
 				throw new Phpr_ApplicationException('Error requesting Google Analytics token. Invalid response from Google Analytics API. Response code: '.$result->error.$description);
 			}
@@ -241,9 +271,7 @@
 
 			Db_Dbhelper::query('update cms_stats_settings set '.$refresh_token.'ga_access_token=:ga_access_token, ga_access_expires=:ga_access_expires where id=:id', $params);
 			
-			$ch = null;
 			$result = null;
-			$response = null;
 			unset($data, $info, $params);
 			
 			$this->isLoggedIn = true;
@@ -264,20 +292,32 @@
 				'grant_type'=>'refresh_token'
 			);
 			
+			$query_string = $this->url_encode_array($data);
+			
+			$this->log('Connecting to: '.$this->refresh_url.$query_string);
+			
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL,$this->refresh_url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->url_encode_array($data));
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $query_string);
 			$response = curl_exec($ch);
 			$info = curl_getinfo($ch);
 			curl_close($ch);
+			
+			$this->log($info);
 						
 			$result = json_decode($response);
+			
+			$response = null;
+			$query_string = null;
+			$ch = null;
 						
 			if(isset($result->error))
 			{
+				$this->log($result);
+				
 				$description = isset($result->error_description) ? ' - '.$result->error_description : '';
 				throw new Phpr_ApplicationException('Error requesting Google Analytics refresh token. Invalid response from Google Analytics API. Response code: '.$result->error.$description);
 			}
@@ -295,9 +335,7 @@
 			
 			$this->log('Refreshing Access Token - Successful');
 						
-			$ch = null;
 			$result = null;
-			$response = null;
 			unset($data, $info, $params);
 		}
 		

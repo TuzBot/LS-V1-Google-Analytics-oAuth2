@@ -24,6 +24,7 @@
 			$this->validation->setFormId('settings_form');
 			
 			$this->define_column('ga_enabled', 'Enable Google Analytics integration');
+			$this->define_column('ga_debug', 'Enable Google Analytics debug')->validation()->fn('trim');
 			$this->define_column('ga_siteid', 'Profile ID')->validation()->fn('trim');
 			$this->define_column('ga_property_id', 'Web Property ID')->validation()->fn('trim');
 			
@@ -52,6 +53,7 @@
 			$this->add_form_partial('ga_hint')->tab('Google Analytics');
 
 			$extraFieldClass = $this->ga_enabled ? null : 'hidden';
+			$this->add_form_field('ga_debug', 'full')->renderAs('on_off_switcher')->tab('Google Analytics')->cssClassName($extraFieldClass)->comment("Enable this option if you are having connection, authorisation or any other issues with this module, debug logs are written to /logs/info.txt <br /><strong>Please make sure you delete the debug logs after inspection, they may output sensitive data.</strong>", "above", true);
 			$this->add_form_field('ga_siteid', 'left')->tab('Google Analytics')->cssClassName($extraFieldClass);
 			$this->add_form_field('ga_property_id', 'right')->tab('Google Analytics')->cssClassName($extraFieldClass);
 
@@ -211,6 +213,7 @@
 			$ga->captcha_value = $this->captcha_value;
 			$ga->captcha_token = $this->captcha_token;
 			$ga->token = $this->ga_refresh_token;
+			$ga->debug = $this->ga_debug;
 		}
 		/*
 		 * IP filters
