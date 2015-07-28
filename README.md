@@ -4,6 +4,7 @@ Brings Lemonstand V1 Google Analytics signing method up to date with oAuth2
 # Google's Universal analytics support
 This feature will be turned on by default, but can be turned off to use the legacy analytics.
 
+# Installation
 1. Login to your Google Developers Console. (https://console.developers.google.com)
 2. Create a project (if you haven't already got an active project)
 3. Navigate to 'APIs' under 'APIs & auth' , search and add the Analytics API to your project.
