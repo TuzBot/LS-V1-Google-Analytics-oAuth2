@@ -2,3 +2,4 @@
 #2|1.0.1 Added columns to cms_stats_settings for new oauth2 google analytics access
 #3|1.0.2 Added additional columns to cms_stats_settings for new oauth2 google analytics access
 #4|1.0.4 Added a debug column to the cms_stats_settings table.
+#5|1.0.5 Added option to use universal or legacy analytics code.

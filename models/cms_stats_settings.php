@@ -27,6 +27,7 @@
 			$this->define_column('ga_debug', 'Enable Google Analytics debug')->validation()->fn('trim');
 			$this->define_column('ga_siteid', 'Profile ID')->validation()->fn('trim');
 			$this->define_column('ga_property_id', 'Web Property ID')->validation()->fn('trim');
+			$this->define_column('ga_use_universal', 'Universal Mode');
 			
 			//$this->define_column('ga_username', 'Email Address')->validation()->fn('trim')->Email(true);
 			$this->define_column('ga_password', 'Password')->validation()->fn('trim');
@@ -53,7 +54,7 @@
 			$this->add_form_partial('ga_hint')->tab('Google Analytics');
 
 			$extraFieldClass = $this->ga_enabled ? null : 'hidden';
-			$this->add_form_field('ga_debug', 'full')->renderAs('on_off_switcher')->tab('Google Analytics')->cssClassName($extraFieldClass)->comment("Enable this option if you are having connection, authorisation or any other issues with this module, debug logs are written to /logs/info.txt <br /><strong>Please make sure you delete the debug logs after inspection, they may output sensitive data.</strong>", "above", true);
+			$this->add_form_field('ga_debug', 'full')->renderAs(frm_onoffswitcher)->tab('Google Analytics')->cssClassName($extraFieldClass)->comment("Enable this option if you are having connection, authorisation or any other issues with this module, debug logs are written to /logs/info.txt <br /><strong>Please make sure you delete the debug logs after inspection, they may output sensitive data.</strong>", "above", true);
 			$this->add_form_field('ga_siteid', 'left')->tab('Google Analytics')->cssClassName($extraFieldClass);
 			$this->add_form_field('ga_property_id', 'right')->tab('Google Analytics')->cssClassName($extraFieldClass);
 
@@ -68,6 +69,10 @@
 			$this->add_form_field('ga_site_speed_sample_rate')->tab('Google Analytics')->cssClassName($extraFieldClass)->comment('Defines a sample set size for Site Speed data collection. If you have a relatively small number of daily visitors to your site, such as 100,000 or fewer, you might want to adjust the sampling to a larger rate. This will provide increased granularity for page load time and other Site Speed metrics.', 'above');
 			
 			$this->add_form_field('ga_enable_doubleclick_remarketing')->tab('Google Analytics')->cssClassName($extraFieldClass)->comment('Enable this feature if you utilize DoubleClick Remarketing with Google Analytics.', 'above');
+			
+			$this->add_form_field('ga_use_universal', 'full')->renderAs(frm_onoffswitcher)->tab('Google Analytics')->cssClassName($extraFieldClass)->comment("By default Google analytics now uses the new universal analytics code you can switch this off and use the legacy google analytics.", "above", true);
+			
+			
 
 			$this->add_form_custom_area('ga_captcha')->tab('Google Analytics');
 			
@@ -94,6 +99,56 @@
 		
 		public function get_ga_tracking_code()
 		{
+			if(!$this->ga_use_universal)
+				return $this->get_ga_legacy_tracking_code();
+			else
+				return $this->get_ga_universal_tracking_code();
+		}
+		
+		public function get_ga_universal_tracking_code()
+		{
+			$config = array();
+			$params = array();
+			$plugins = array();
+			
+			if (!strlen($this->ga_site_speed_sample_rate))
+				$this->ga_site_speed_sample_rate = 1;
+			
+			$propertyId = $this->ga_property_id;
+			
+			$tracker_endpoint = $this->ga_enable_doubleclick_remarketing ? $plugins['displayfeatures'] = 'require' : null;
+			
+			$config['siteSpeedSampleRate'] = $this->ga_site_speed_sample_rate;
+			
+			if($this->ga_domain_name)
+			{
+				$params['allowLinker'] = true;
+				$plugins['linker'] = 'require';
+				
+				$domains = json_encode(array($this->ga_domain_name));
+				$plugins[$domains] = 'linker:autoLink';
+			}
+			
+			$config = count($config) ? json_encode($config) : 'auto';
+			
+			$params = count($params) ? ', '.json_encode($params) : null;
+			
+			$data = null;
+			foreach($plugins as $plugin=>$type)
+				$data .= "\t ga('{$type}':'{$plugin}');\n";
+					
+			$result = "\n\t<script type=\"text/javascript\">
+\t(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+\t(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+\tm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+\t})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+\tga('create', '$propertyId', $config $params);
+{$data}";				
+			return $result;
+		}
+
+		public function get_ga_legacy_tracking_code()
+		{
 			if (!strlen($this->ga_site_speed_sample_rate))
 				$this->ga_site_speed_sample_rate = 1;
 			
@@ -115,18 +170,28 @@
 
 		public function get_ga_tracker_close_declaration()
 		{
+			if(!$this->ga_use_universal)
+			{
 			$tracker_endpoint = $this->ga_enable_doubleclick_remarketing ? 
 				"ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';" : 
 				"ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';";
 			
-			return "\t(function() {
+return "\t(function() {
 \tvar ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 \t$tracker_endpoint
 \tvar s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 \t})();
 \t</script>\n";
+			}
+			else
+			{
+return"\tga('send', 'pageview');
+\t</script>\n";
+	
+			}
 		}
 
+		
 		public function get_ga_ec_tracking_code($order)
 		{
 			$order_tax = $order->shipping_tax + $order->goods_tax;
@@ -136,23 +201,61 @@
 				$company_name = 'LemonStand';
 
 			$company_name = Core_String::js_encode($company_name);
-
-			$result = "\t_gaq.push(['_addTrans', \"{$order->id}\", \"{$company_name}\", \"{$order->total}\", \"{$order_tax}\", \"{$order->shipping_quote}\", \"\", \"\", \"\"]);\n";
-
+			$currency = Shop_CurrencySettings::get();
+			
+			if(!$this->ga_use_universal)
+			{
+				$result = "\t gaq.push(['_addTrans', \"{$order->id}\", \"{$company_name}\", \"{$order->total}\", \"{$order_tax}\", \"{$order->shipping_quote}\", \"\", \"\", \"\"]);\n";
+			}
+			else
+			{
+				$result = "ga('require', 'ecommerce');\n";
+				
+				$result .= "\t ga('ecommerce:clear');\n";	
+				
+				$result .= "\t ga('ecommerce:addTransaction', {
+				  'id': '{$order->id}',                     // Transaction ID. Required.
+				  'affiliation': '{$company_name}',   			// Affiliation or store name.
+				  'revenue': '{$order->total}',             // Grand Total.
+				  'shipping': '{$order->shipping_quote}',   // Shipping.
+				  'tax': '{$order_tax}',                    // Tax.
+				  'currency': '{$currency->code}'						// Currency
+				});\n";
+			}
+			
 			foreach ($order->items as $item)
 			{
 				$sku = Core_String::js_encode($item->product->sku);
 				$name = Core_String::js_encode($item->product->name);
 				$category = Core_String::js_encode($item->product->category_list[0]->name);
 				$price = $item->eval_unit_total_price();
-
-				$result .= "\t_gaq.push(['_addItem', \"{$order->id}\", \"{$sku}\", \"{$name}\", \"{$category}\", \"{$price}\", \"{$item->quantity}\"]);\n";
+				
+				if(!$this->ga_use_universal)
+				{
+					$result .= "\t_gaq.push(['_addItem', \"{$order->id}\", \"{$sku}\", \"{$name}\", \"{$category}\", \"{$price}\", \"{$item->quantity}\"]);\n";
+				}
+				else
+				{
+					$result .= "\t ga('ecommerce:addItem', {
+					  'id': '{$order->id}',             // Transaction ID. Required.
+					  'name': '{$name}',    						// Product name. Required.
+					  'sku': '{$sku}',                 	// SKU/code.
+					  'category': '{$category}',        // Category or variation.
+					  'price': '{$price}',              // Unit price.
+					  'quantity': '{$item->quantity}'   // Quantity.
+					})\n;";
+				}
 			}
 			
-			$result .= "\t_gaq.push(['_trackTrans']);";
+			if(!$this->ga_use_universal)
+				$result .= "\t_gaq.push(['_trackTrans']);";
+			else
+				$result .= "ga('ecommerce:send');";
+				
 
 			return $result;
 		}
+		
 
 		/*
 		 * Validation

@@ -102,8 +102,8 @@
 				
 					throw new Phpr_SystemException($output);
 			}
-			else			
-				throw new Phpr_SystemException('Error connecting to Google Analytics. Google error: '.$output);
+			//else			
+				//throw new Phpr_SystemException('Error connecting to Google Analytics. Google error: '.$output);
 
 			if (!$this->auth_token)
 				throw new Phpr_SystemException('Error connecting to Google Analytics. Authentication ticket not found in Google API response.');

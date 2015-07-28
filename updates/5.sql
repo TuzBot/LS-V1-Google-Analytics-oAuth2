@@ -1,0 +1,1 @@
+alter table cms_stats_settings add column ga_use_universal tinyint(1) default 1;
